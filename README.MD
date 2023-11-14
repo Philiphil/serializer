@@ -12,13 +12,14 @@ The Serializer library provides a flexible way to serialize and deserialize data
 - **Format Support:** Serializer currently supports various serialization formats, including JSON, CSV & XML.
 - **Serialization Groups:** You can use serialization groups to selectively include or exclude fields during the serialization process.
 - **Inspired by Symfony:** Leveraging concepts from the Symfony Serializer Component ensures familiarity for users familiar with Symfony.
+- **Deserialization and Merge:** Deserialize and merge functionality allows for the combination of serialized data with existing objects.
 
 ## Installation
 
 To use the Serializer library in your Go project, simply import the package:
 
 ```shell
-go get github.com/philphil/serializer
+go get github.com/philiphil/serializer
 ```
 
 
@@ -37,10 +38,10 @@ type MyStruct struct {
 	Email string `json:"email"`
 }
 
+
 func main() {
 	// Create an instance of Serializer
-	mySerializer := serializer.NewSerializer(serializer.Json)
-
+	mySerializer := serializer.NewSerializer(serializer.JSON)
 	// Data to serialize
 	dataToSerialize := MyStruct{
 		Name:  "John Doe",
@@ -49,12 +50,14 @@ func main() {
 	}
 
 	// Serialize data to JSON with the "group1" group
-	serializedData, err := mySerializer.Serialize(dataToSerialize, "json", "group1")
+	serializedData, err := mySerializer.Serialize(dataToSerialize, "group1")
 	if err != nil {
 		fmt.Println("Serialization error:", err)
 		return
 	}
-
+	//Serialized Data: {
+	//  "name": "John Doe"
+	//}
 	fmt.Println("Serialized Data:", serializedData)
 
 	// New structure for deserialization
@@ -67,8 +70,33 @@ func main() {
 		return
 	}
 
-	// Display the deserialized data
+	// Deserialized Data: {Name:John Doe Age:0 Email:}
 	fmt.Printf("Deserialized Data: %+v\n", deserializedData)
-}
 
+	// Create another instance of MyStruct
+	anotherData := MyStruct{
+		Name:  "Jane Doe",
+		Age:   25,
+		Email: "jane@example.com",
+	}
+
+	// Merge the deserialized data with another instance of MyStruct
+	if err := mySerializer.MergeObjects(&anotherData, &deserializedData); err != nil {
+		fmt.Println("Merge error:", err)
+		return
+	}
+
+	// Merged Data: {Name:John Doe Age:25 Email:jane@example.com}
+	fmt.Printf("Merged Data: %+v\n", anotherData)
+}
 ```
+
+
+## State
+
+- **JSON:** JSON format is fully supported.
+- **XML and CSV:** XML and CSV formats are under testing and may have bugs.
+- **Serialization:** Serialization functionality is working.
+- **Serialization Groups:** Serialization groups are functioning as expected.
+- **Deserialization:** Deserialization functionality is operational.
+- **Deserialize and Merge:** The deserialize and merge feature is functional, providing an easy way to combine serialized data with existing objects.

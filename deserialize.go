@@ -40,7 +40,6 @@ func (s *Serializer) MergeObjects(target interface{}, source interface{}) error 
 		targetField := targetValue.Field(i)
 		sourceField := sourceValue.Field(i)
 
-		// Ne fusionner que les champs exportés non vides
 		if targetField.CanSet() && !isEmpty(sourceField) {
 			targetField.Set(sourceField)
 		}
