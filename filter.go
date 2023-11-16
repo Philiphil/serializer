@@ -10,7 +10,7 @@ func filterByGroups[T any](obj T, groups ...string) T {
 	elemType := value.Type()
 
 	if !isStruct(elemType) {
-		//return obj
+		return obj
 	}
 
 	var newFields []reflect.StructField
@@ -18,7 +18,18 @@ func filterByGroups[T any](obj T, groups ...string) T {
 	for i := 0; i < elemType.NumField(); i++ {
 		field := elemType.Field(i)
 		if isFieldExported(field) && isFieldIncluded(field, groups) {
-			newFields = append(newFields, field)
+			fieldValue := value.Field(i)
+
+			if isStruct(field.Type) {
+				filteredElem := filterByGroups(fieldValue.Interface(), groups...)
+				newFields = append(newFields, reflect.StructField{
+					Name: field.Name,
+					Type: reflect.TypeOf(filteredElem),
+					Tag:  field.Tag,
+				})
+			} else {
+				newFields = append(newFields, field)
+			}
 		}
 	}
 
@@ -28,10 +39,23 @@ func filterByGroups[T any](obj T, groups ...string) T {
 	for i, field := range newFields {
 		fieldName := field.Name
 		fieldValue := value.FieldByName(fieldName)
-		newValue.Field(i).Set(fieldValue)
+		newFieldValue := newValue.Field(i)
+
+		assignFieldValue(field, newFieldValue, fieldValue, groups...)
 	}
 
 	return newValue.Interface().(T)
+}
+
+func assignFieldValue(field reflect.StructField, destValue reflect.Value, srcValue reflect.Value, groups ...string) {
+	if field.Type == srcValue.Type() {
+		destValue.Set(srcValue)
+	} else if field.Type.AssignableTo(srcValue.Type()) {
+		destValue.Set(srcValue)
+	} else if isStruct(field.Type) {
+		filteredElem := filterByGroups(srcValue.Interface(), groups...)
+		destValue.Set(reflect.ValueOf(filteredElem))
+	}
 }
 
 func isFieldIncluded(field reflect.StructField, groups []string) bool {

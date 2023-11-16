@@ -19,6 +19,31 @@ func TestSerializer_Deserialize(t *testing.T) {
 
 }
 
+func TestSerializer_Deserialize2(t *testing.T) {
+	test2 := Recursive{
+		Hidden{1, 2},
+		Hidden{3, 4},
+	}
+	expected2 := Recursive{
+		Hidden{1, 0},
+		Hidden{0, 0},
+	}
+
+	s := NewSerializer(JSON)
+	serialized, err := s.Serialize(test2, "test")
+	if err != nil {
+		panic(err)
+	}
+	o := Recursive{}
+	err = s.Deserialize(serialized, &o)
+	if o != expected2 {
+		fmt.Println(o)
+		fmt.Println(expected2)
+		panic("!")
+	}
+
+}
+
 func TestSerializer_MergeObjects(t *testing.T) {
 	target := Test{
 		11, 11, 11, 11, 11, 11, 11,

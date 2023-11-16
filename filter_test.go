@@ -14,6 +14,15 @@ type Test struct {
 	Test6 int `group:"test"`
 }
 
+type Recursive struct {
+	Test1 Hidden `group:"test"`
+	Test2 Hidden
+}
+type Hidden struct {
+	Test0 int `group:"test"`
+	Test1 int
+}
+
 var test = Test{
 	9, -8, 7, 6, -5, -4, 3,
 }
