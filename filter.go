@@ -9,6 +9,10 @@ func filterByGroups[T any](obj T, groups ...string) T {
 	value := reflect.ValueOf(obj)
 	elemType := value.Type()
 
+	if !isStruct(elemType) {
+		return obj
+	}
+
 	var newFields []reflect.StructField
 
 	for i := 0; i < elemType.NumField(); i++ {
@@ -54,4 +58,8 @@ func isFieldIncluded(field reflect.StructField, groups []string) bool {
 
 func isFieldExported(field reflect.StructField) bool {
 	return field.PkgPath == ""
+}
+
+func isStruct(t reflect.Type) bool {
+	return t.Kind() == reflect.Struct
 }
