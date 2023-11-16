@@ -10,7 +10,7 @@ func filterByGroups[T any](obj T, groups ...string) T {
 	elemType := value.Type()
 
 	if !isStruct(elemType) {
-		return obj
+		//return obj
 	}
 
 	var newFields []reflect.StructField
