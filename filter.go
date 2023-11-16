@@ -1,9 +1,53 @@
 package serializer
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
+
+func isFieldIncluded(field reflect.StructField, groups []string) bool {
+	if len(groups) == 0 {
+		return true //No filtration then
+	}
+
+	tag := field.Tag.Get("group")
+	if tag == "" {
+		return false
+	}
+
+	groupList := strings.Split(tag, ",")
+	for _, group := range groups {
+		for _, g := range groupList {
+			if group == g {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func isFieldExported(field reflect.StructField) bool {
+	return field.PkgPath == ""
+}
+
+func isStruct(t reflect.Type) bool {
+	return t.Kind() == reflect.Struct
+}
+
+func assignFieldValue(field reflect.StructField, destValue reflect.Value, srcValue reflect.Value, groups ...string) {
+	if field.Type == srcValue.Type() {
+		destValue.Set(srcValue)
+	} else if field.Type.AssignableTo(srcValue.Type()) {
+		destValue.Set(srcValue)
+	} else if isStruct(field.Type) {
+		filteredElem := filterByGroups(srcValue.Interface(), groups...)
+		destValue.Set(reflect.ValueOf(filteredElem))
+	} else {
+		fmt.Printf("Type mismatch for field %s\n", field.Name)
+	}
+}
 
 func filterByGroups[T any](obj T, groups ...string) T {
 	value := reflect.ValueOf(obj)
@@ -40,50 +84,8 @@ func filterByGroups[T any](obj T, groups ...string) T {
 		fieldName := field.Name
 		fieldValue := value.FieldByName(fieldName)
 		newFieldValue := newValue.Field(i)
-
 		assignFieldValue(field, newFieldValue, fieldValue, groups...)
 	}
 
 	return newValue.Interface().(T)
-}
-
-func assignFieldValue(field reflect.StructField, destValue reflect.Value, srcValue reflect.Value, groups ...string) {
-	if field.Type == srcValue.Type() {
-		destValue.Set(srcValue)
-	} else if field.Type.AssignableTo(srcValue.Type()) {
-		destValue.Set(srcValue)
-	} else if isStruct(field.Type) {
-		filteredElem := filterByGroups(srcValue.Interface(), groups...)
-		destValue.Set(reflect.ValueOf(filteredElem))
-	}
-}
-
-func isFieldIncluded(field reflect.StructField, groups []string) bool {
-	if len(groups) == 0 {
-		return true //No filtration then
-	}
-
-	tag := field.Tag.Get("group")
-	if tag == "" {
-		return false
-	}
-
-	groupList := strings.Split(tag, ",")
-	for _, group := range groups {
-		for _, g := range groupList {
-			if group == g {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func isFieldExported(field reflect.StructField) bool {
-	return field.PkgPath == ""
-}
-
-func isStruct(t reflect.Type) bool {
-	return t.Kind() == reflect.Struct
 }
