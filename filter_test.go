@@ -23,6 +23,14 @@ type Hidden struct {
 	Test1 int
 }
 
+type Ptr struct {
+	Test0 int     `group:"test"`
+	Test1 *int    `group:"test"`
+	Test2 *Hidden `group:"test"`
+	Test3 *int
+	Test4 *Hidden
+}
+
 var test = Test{
 	9, -8, 7, 6, -5, -4, 3,
 }

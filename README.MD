@@ -100,3 +100,9 @@ func main() {
 - **Serialization Groups:** Serialization groups are functioning as expected.
 - **Deserialization:** Deserialization functionality is operational.
 - **Deserialize and Merge:** The deserialize and merge feature is functional, providing an easy way to combine serialized data with existing objects.
+- **nested structures :** nested structures are fully supported.
+- **slice of structures :** slice structures are fully supported.
+## TODO
+- Maps[any] to Maps[any]
+- Maps[Typed] to Maps[Typed]
+- Maps[Typed] to Maps[any]
