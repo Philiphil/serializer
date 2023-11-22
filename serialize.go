@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"github.com/philiphil/serializer/Filter"
 	"reflect"
 	"strings"
 )
@@ -23,7 +24,7 @@ func (s *Serializer) Serialize(obj any, groups ...string) (string, error) {
 }
 
 func (s *Serializer) serializeJSON(obj any, groups ...string) (string, error) {
-	data := filterByGroups(obj, groups...)
+	data := Filter.FilterByGroups(obj, groups...)
 	//data = renameFieldsToLower(data)
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
@@ -33,7 +34,7 @@ func (s *Serializer) serializeJSON(obj any, groups ...string) (string, error) {
 }
 
 func (s *Serializer) serializeXML(obj any, groups ...string) (string, error) {
-	data := filterByGroups(obj, groups...)
+	data := Filter.FilterByGroups(obj, groups...)
 	xmlBytes, err := xml.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return "", err
@@ -42,7 +43,7 @@ func (s *Serializer) serializeXML(obj any, groups ...string) (string, error) {
 }
 
 func (s *Serializer) serializeCSV(obj any, groups ...string) (string, error) {
-	data := filterByGroups(obj, groups...)
+	data := Filter.FilterByGroups(obj, groups...)
 
 	value := reflect.ValueOf(data)
 	if value.Kind() != reflect.Slice {
@@ -61,7 +62,7 @@ func (s *Serializer) serializeCSV(obj any, groups ...string) (string, error) {
 		if i == 0 {
 			for j := 0; j < elemValue.NumField(); j++ {
 				field := elemValue.Type().Field(j)
-				if isFieldIncluded(field, groups) {
+				if Filter.IsFieldIncluded(field, groups) {
 					header = append(header, field.Name)
 				}
 			}
@@ -70,7 +71,7 @@ func (s *Serializer) serializeCSV(obj any, groups ...string) (string, error) {
 
 		for j := 0; j < elemValue.NumField(); j++ {
 			field := elemValue.Field(j)
-			if isFieldIncluded(elemValue.Type().Field(j), groups) {
+			if Filter.IsFieldIncluded(elemValue.Type().Field(j), groups) {
 				row = append(row, fmt.Sprintf("%v", field.Interface()))
 			}
 		}

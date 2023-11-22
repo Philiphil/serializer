@@ -6,6 +6,44 @@ import (
 	"testing"
 )
 
+type Test struct {
+	Test0 int `group:"test"`
+	Test1 int `group:"testo"`
+	Test2 int `group:"test"`
+	Test3 int `group:"testo,test"`
+	Test4 int
+	test5 int
+	Test6 int `group:"test"`
+}
+
+type Recursive struct {
+	Test1 Hidden `group:"test"`
+	Test2 Hidden
+}
+type Hidden struct {
+	Test0 int `group:"test"`
+	Test1 int
+}
+
+type Ptr struct {
+	Test0 int     `group:"test"`
+	Test1 *int    `group:"test"`
+	Test2 *Hidden `group:"test"`
+	Test3 *int
+	Test4 *Hidden
+}
+
+type Test2 struct {
+	Test
+}
+
+var test = Test{
+	9, -8, 7, 6, -5, -4, 3,
+}
+var testDeserializedResult = Test{
+	9, 0, 7, 6, 0, 0, 3,
+}
+
 // basic struct
 func TestSerializer_Deserialize(t *testing.T) {
 	s := NewSerializer(JSON)
@@ -254,6 +292,46 @@ func TestSerializer_Deserialize10(t *testing.T) {
 		fmt.Println(testDeserializedResult)
 		panic("!")
 	}
+}
+
+// anonymous
+func TestSerializer_Deserialize11(t *testing.T) {
+	s := NewSerializer(JSON)
+	tt := Test2{test}
+	rr := Test2{testDeserializedResult}
+	serialized, err := s.Serialize(tt, "test")
+	if err != nil {
+		panic(err)
+	}
+	o := Test2{}
+	err = s.Deserialize(serialized, &o)
+	if o != rr {
+		fmt.Println(serialized)
+		fmt.Println(rr)
+		fmt.Println(o)
+		panic("!")
+	}
+
+}
+
+// anonymous w/ptr
+func TestSerializer_Deserialize12(t *testing.T) {
+	s := NewSerializer(JSON)
+	tt := Test2{test}
+	rr := Test2{testDeserializedResult}
+	serialized, err := s.Serialize(&tt, "test")
+	if err != nil {
+		panic(err)
+	}
+	o := Test2{}
+	err = s.Deserialize(serialized, &o)
+	if o != rr {
+		fmt.Println(serialized)
+		fmt.Println(rr)
+		fmt.Println(o)
+		panic("!")
+	}
+
 }
 
 func TestSerializer_MergeObjects(t *testing.T) {
